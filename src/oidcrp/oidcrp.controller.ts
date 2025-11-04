@@ -1,5 +1,4 @@
 import { Controller, Get, Header, Inject, Req, Res, Session } from "@nestjs/common";
-import { getAuthServer } from "./helpers";
 import * as oauth from "oauth4webapi"
 import { OidcClientConfig } from "src/configs/client";
 import type { Request, Response } from "express";
@@ -13,6 +12,7 @@ export class OidcRPController {
 
     @Get("init")
     async init(@Session() session: Record<string, unknown>, @Res() response: Response) {
+        console.debug("chamou init");
         const codeChallengeMethod = "S256";
 
         const codeVerifier = oauth.generateRandomCodeVerifier();
@@ -30,8 +30,12 @@ export class OidcRPController {
         authorizationUrl.searchParams.set("code_challenge", codeChallange);
         authorizationUrl.searchParams.set("code_challenge_method", codeChallengeMethod);
         authorizationUrl.searchParams.set("nonce", nonce);
+        authorizationUrl.searchParams.set("claims", JSON.stringify({
+            id_token: { acr: { value: "loa1", essential: true } }
+        }));
 
-        response.redirect(authorizationUrl.toString());
+        console.debug(authorizationUrl.toString());
+        return response.redirect(authorizationUrl.toString());
     }
 
     @Get("callback")
@@ -75,7 +79,13 @@ export class OidcRPController {
 
     @Header("Content-Type", "application/json")
     @Get("info")
-    async getUserInfo(@Session() session: Record<string, unknown>) {
+    async getUserInfo(@Session() session: Record<string, unknown>, @Res() httpResponse: Response) {
+        console.debug("chamou info")
+
+        if (!("idToken" in session) || !("tokenResponse" in session)) {
+            return httpResponse.redirect("/init");
+        }
+
         const { sub } = session.idToken as oauth.IDToken;
         const { accessToken } = session.tokenResponse as TokenResponse;
 
