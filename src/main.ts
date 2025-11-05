@@ -1,20 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import session from 'express-session';
-import { RedisClient } from './external/redis.provider';
+import { RedisClientGuard } from './external/redis.provider';
 import { RedisStore } from 'connect-redis';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableShutdownHooks();
 
-  const redisClient = app.get(RedisClient);
+  const redisClient = app.get(RedisClientGuard);
 
   app.use(
   session({
     secret: 'my-secret',
     resave: false,
     saveUninitialized: false,
-    store: new RedisStore({ client: redisClient }),
+    store: new RedisStore({ client: redisClient.client }),
     cookie: {
       secure: false,
       httpOnly: true,
