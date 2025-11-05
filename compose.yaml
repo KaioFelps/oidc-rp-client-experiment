@@ -1,0 +1,8 @@
+services:
+  platform_redis:
+    container_name: oidc_client_redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - ${REDIS_PORT}:6379
+    image: bitnami/redis:latest
