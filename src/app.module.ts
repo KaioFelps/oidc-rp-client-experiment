@@ -2,9 +2,13 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { OidcRPModule } from './oidcrp/oidcrp.module';
+import { AppConfigsModule } from './configs/app-configs.module';
 
 @Module({
-  imports: [OidcRPModule],
+  imports: [
+    AppConfigsModule,
+    OidcRPModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
