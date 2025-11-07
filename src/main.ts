@@ -16,6 +16,7 @@ async function bootstrap() {
     resave: false,
     saveUninitialized: false,
     store: new RedisStore({ client: redisClient.client }),
+    name: "oidc_client_session_cookie",
     cookie: {
       secure: false,
       httpOnly: true,
