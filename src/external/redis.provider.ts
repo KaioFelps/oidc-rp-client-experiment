@@ -14,7 +14,6 @@ export class RedisClientGuard implements OnModuleInit, OnModuleDestroy {
         const password= env.get("REDIS_PASSWORD");
 
         const url = `redis://${user}:${password}@${host}:${port}`;
-        console.debug(url)
         const client = createClient({ url })
 
         this.client = client as RedisClientType;
