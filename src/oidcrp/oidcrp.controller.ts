@@ -30,6 +30,7 @@ export class OidcRPController {
         authorizationUrl.searchParams.set("code_challenge", codeChallange);
         authorizationUrl.searchParams.set("code_challenge_method", codeChallengeMethod);
         authorizationUrl.searchParams.set("nonce", nonce);
+        authorizationUrl.searchParams.set("acr_values", "loa1");
         authorizationUrl.searchParams.set("claims", JSON.stringify({
             id_token: { acr: { value: "loa1", essential: true } }
         }));
