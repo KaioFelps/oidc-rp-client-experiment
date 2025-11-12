@@ -49,7 +49,20 @@ export class OidcRPController {
         const currentUrl = new URL(`${request.protocol}://${request.host}${request.originalUrl}`);
         const codeVerifier = session.codeVerifier as string;
 
-        const params = oauth.validateAuthResponse(this.as, this.client, currentUrl);
+        let params: URLSearchParams;
+        try {
+            params = oauth.validateAuthResponse(this.as, this.client, currentUrl);
+        } catch (error) {
+            if (!(error instanceof oauth.AuthorizationResponseError)) throw error;
+
+            if (error.cause.get("error") === "access_denied") {
+                return response
+                    .json({ error: "The end-user has denied access to requested resources." })
+                    .status(HttpStatus.UNAUTHORIZED);
+            }
+
+            return response.redirect("/init");
+        }
 
         const grantResponse = await oauth.authorizationCodeGrantRequest(
             this.as,
