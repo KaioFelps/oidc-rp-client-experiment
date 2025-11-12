@@ -89,19 +89,30 @@ export class OidcRPController {
             return response.redirect("/init");
         }
 
-        const { sub } = session.idToken as oauth.IDToken;
-        const { accessToken } = session.tokenResponse as TokenResponse;
+        try {
+            const { sub } = session.idToken as oauth.IDToken;
+            const { accessToken } = session.tokenResponse as TokenResponse;
 
-        const userResponse = await oauth.userInfoRequest(this.as, this.client, accessToken, {
-            [oauth.allowInsecureRequests]: true
-        });
+            const userResponse = await oauth.userInfoRequest(this.as, this.client, accessToken, {
+                [oauth.allowInsecureRequests]: true
+            });
 
-        const result = await oauth.processUserInfoResponse(
-            this.as,
-            this.client,
-            sub,
-            userResponse);
+            const result = await oauth.processUserInfoResponse(
+                this.as,
+                this.client,
+                sub,
+                userResponse);
 
-        return response.json(result);
+            return response.json(result);
+        } catch (error) {
+            if (!(error instanceof oauth.WWWAuthenticateChallengeError)) throw error;
+
+            const tokenHasBeenInvalidated = error
+                .cause
+                .some(cause => cause.parameters.error === "invalid_token");
+
+            if (tokenHasBeenInvalidated) return response.redirect("/init");
+            throw error;
+        }
     }
 }
