@@ -12,7 +12,6 @@ export class OidcRPController {
 
     @Get("init")
     async init(@Session() session: Record<string, unknown>, @Res() response: Response) {
-        console.debug("chamou init");
         const codeChallengeMethod = "S256";
 
         const codeVerifier = oauth.generateRandomCodeVerifier();
@@ -35,7 +34,6 @@ export class OidcRPController {
             id_token: { acr: { value: "loa1", essential: true } }
         }));
 
-        console.debug(authorizationUrl.toString());
         return response.redirect(authorizationUrl.toString());
     }
 
@@ -62,7 +60,6 @@ export class OidcRPController {
             response,
             { expectedNonce: nonce, requireIdToken: true });
 
-        console.debug(result);
         session.tokenResponse = {
             accessToken: result.access_token,
             refreshToken: result.refresh_token,
@@ -74,15 +71,12 @@ export class OidcRPController {
         const claims = oauth.getValidatedIdTokenClaims(result);
         if (!claims) throw new Error("Expected to receive a IDToken, but got none.");
 
-        console.debug(claims)
         session.idToken = claims;
     }
 
     @Header("Content-Type", "application/json")
     @Get("info")
-    async getUserInfo(@Session() session: Record<string, unknown>, @Res() httpResponse: Response) {
-        console.debug("chamou info")
-
+    async getUserInfo(@Session() session: Record<string, unknown>, @Res() response: Response) {
         if (!("idToken" in session) || !("tokenResponse" in session)) {
             return httpResponse.redirect("/init");
         }
@@ -97,7 +91,6 @@ export class OidcRPController {
             sub,
             response);
 
-        console.debug(result);
         return result;
     }
 }
