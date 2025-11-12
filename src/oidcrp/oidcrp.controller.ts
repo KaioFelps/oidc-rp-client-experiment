@@ -25,7 +25,7 @@ export class OidcRPController {
         authorizationUrl.searchParams.set("client_id", this.client.client_id);
         authorizationUrl.searchParams.set("redirect_uri", OidcClientConfig.redirectUri);
         authorizationUrl.searchParams.set("response_type", "code");
-        authorizationUrl.searchParams.set("scope", "openid");
+        authorizationUrl.searchParams.set("scope", "openid email profile");
         authorizationUrl.searchParams.set("code_challenge", codeChallange);
         authorizationUrl.searchParams.set("code_challenge_method", codeChallengeMethod);
         authorizationUrl.searchParams.set("nonce", nonce);
