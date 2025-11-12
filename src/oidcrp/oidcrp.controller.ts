@@ -29,9 +29,11 @@ export class OidcRPController {
         authorizationUrl.searchParams.set("code_challenge", codeChallange);
         authorizationUrl.searchParams.set("code_challenge_method", codeChallengeMethod);
         authorizationUrl.searchParams.set("nonce", nonce);
-        authorizationUrl.searchParams.set("acr_values", "loa1");
+        
+        // both can be sent in this case 'cause PoC Auth. Server will resolve this
+        authorizationUrl.searchParams.set("acr_values", "1");
         authorizationUrl.searchParams.set("claims", JSON.stringify({
-            id_token: { acr: { value: "loa1", essential: true } }
+            id_token: { acr: { value: "1", essential: true } }
         }));
 
         return response.redirect(authorizationUrl.toString());
