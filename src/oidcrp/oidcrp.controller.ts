@@ -78,6 +78,8 @@ export class OidcRPController {
         if (!claims) throw new Error("Expected to receive a IDToken, but got none.");
 
         session.idToken = claims;
+
+        return response.redirect("/info");
     }
 
     @Header("Content-Type", "application/json")
