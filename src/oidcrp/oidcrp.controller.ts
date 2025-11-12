@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Inject, Req, Res, Session } from "@nestjs/common";
+import { Controller, Get, Header, HttpStatus, Inject, Query, Req, Res, Session } from "@nestjs/common";
 import * as oauth from "oauth4webapi"
 import { OidcClientConfig } from "src/configs/client";
 import type { Request, Response } from "express";
@@ -43,7 +43,7 @@ export class OidcRPController {
     async callback(
         @Req() request: Request,
         @Res() response: Response,
-        @Session() session: Record<string, unknown>
+        @Session() session: Record<string, unknown>,
     ) {
         const clientAuth = oauth.ClientSecretPost(OidcClientConfig.clientSecret);
         const currentUrl = new URL(`${request.protocol}://${request.host}${request.originalUrl}`);
@@ -121,13 +121,7 @@ export class OidcRPController {
             return response.json(result);
         } catch (error) {
             if (!(error instanceof oauth.WWWAuthenticateChallengeError)) throw error;
-
-            const tokenHasBeenInvalidated = error
-                .cause
-                .some(cause => cause.parameters.error === "invalid_token");
-
-            if (tokenHasBeenInvalidated) return response.redirect("/init");
-            throw error;
+            return response.redirect("/init");
         }
     }
 }
