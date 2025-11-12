@@ -38,26 +38,32 @@ export class OidcRPController {
     }
 
     @Get("callback")
-    async callback(@Req() request: Request, @Session() session: Record<string, unknown>) {
+    async callback(
+        @Req() request: Request,
+        @Res() response: Response,
+        @Session() session: Record<string, unknown>
+    ) {
         const clientAuth = oauth.ClientSecretPost(OidcClientConfig.clientSecret);
         const currentUrl = new URL(`${request.protocol}://${request.host}${request.originalUrl}`);
         const codeVerifier = session.codeVerifier as string;
 
         const params = oauth.validateAuthResponse(this.as, this.client, currentUrl);
 
-        const response = await oauth.authorizationCodeGrantRequest(
+        const grantResponse = await oauth.authorizationCodeGrantRequest(
             this.as,
             this.client,
             clientAuth,
             params,
             OidcClientConfig.redirectUri,
-            codeVerifier);
+            codeVerifier, {
+                [oauth.allowInsecureRequests]: true
+            });
         
         const nonce = session.nonce as string;
         const result = await oauth.processAuthorizationCodeResponse(
             this.as,
             this.client,
-            response,
+            grantResponse,
             { expectedNonce: nonce, requireIdToken: true });
 
         session.tokenResponse = {
@@ -78,18 +84,21 @@ export class OidcRPController {
     @Get("info")
     async getUserInfo(@Session() session: Record<string, unknown>, @Res() response: Response) {
         if (!("idToken" in session) || !("tokenResponse" in session)) {
-            return httpResponse.redirect("/init");
+            return response.redirect("/init");
         }
 
         const { sub } = session.idToken as oauth.IDToken;
         const { accessToken } = session.tokenResponse as TokenResponse;
 
-        const response = await oauth.userInfoRequest(this.as, this.client, accessToken);
+        const userResponse = await oauth.userInfoRequest(this.as, this.client, accessToken, {
+            [oauth.allowInsecureRequests]: true
+        });
+
         const result = await oauth.processUserInfoResponse(
             this.as,
             this.client,
             sub,
-            response);
+            userResponse);
 
         return result;
     }
