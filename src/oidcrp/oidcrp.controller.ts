@@ -102,6 +102,6 @@ export class OidcRPController {
             sub,
             userResponse);
 
-        return result;
+        return response.json(result);
     }
 }
